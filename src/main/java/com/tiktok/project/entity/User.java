@@ -56,12 +56,6 @@ public class User implements UserDetails {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    @Column(name = "follower_count")
-    private int followerCount;
-
-    @Column(name = "following_count")
-    private int followingCount;
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JsonIgnore
     @JoinTable(
@@ -97,6 +91,21 @@ public class User implements UserDetails {
 
     @Column(name = "is_verify", nullable = false)
     private boolean isVerify;
+
+
+    // Getter cho follower count
+    public int getFollowerCount() {
+        return followerRelations != null ? followerRelations.size() : 0;
+    }
+
+    // Getter cho following count
+    public int getFollowingCount() {
+        return followingRelations != null ? followingRelations.size() : 0;
+    }
+
+
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roleList.stream()

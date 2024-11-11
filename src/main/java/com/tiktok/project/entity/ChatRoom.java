@@ -13,32 +13,21 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "messages")
-public class Message {
+@Table(name = "chat_rooms")
+public class ChatRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id", nullable = false)
-    private User sender;
-
+    @JoinColumn(name = "user_one_id", nullable = false)
+    private User userOne;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id", nullable = false)
-    private User receiver;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id", nullable = false)
-    private ChatRoom chatRoom;
-
-    @Column(length = 1000, nullable = false)
-    private String content;
-
+    @JoinColumn(name = "user_two_id", nullable = false)
+    private User userTwo;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Date createdAt;
-
-
 
     @PrePersist
     protected void onCreate() {

@@ -34,7 +34,8 @@ public class Video {
     @Column(nullable = false)
     private String shape;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
     @Column(name = "likes_count")

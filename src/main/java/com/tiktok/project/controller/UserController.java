@@ -3,7 +3,9 @@ package com.tiktok.project.controller;
 import com.tiktok.project.dto.EditProfileRequestDTO;
 import com.tiktok.project.dto.UserDTO;
 import com.tiktok.project.dto.UsernameValidationDTO;
+import com.tiktok.project.dto.response.FriendResponse;
 import com.tiktok.project.entity.User;
+import com.tiktok.project.service.FollowService;
 import com.tiktok.project.service.UserService;
 import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +15,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private FollowService followService;
 
     @GetMapping("/profile")
     public ResponseEntity<?> loadUser(Authentication authentication) {
@@ -102,12 +109,36 @@ public class UserController {
                             user.getProfilePictureUrl(),
                             user.getBio(),
                             user.getFollowingCount(),
-                            user.getFollowingCount(),
+                            user.getFollowerCount(),
                             user.isVerify(),
                             user.getRoleList()
                     )
             );
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found User");
+    }
+
+    @GetMapping("/get-list-friend")
+    public ResponseEntity<?> getListFriend(@RequestParam int id) {
+        User user = userService.findUserById(id);
+
+        List<User> listUser = followService.getMutualFollowings(user);
+        List<FriendResponse> responses = new ArrayList<>();
+
+        for (User friend : listUser) {
+            FriendResponse friendResponse = new FriendResponse(
+                    friend.getId(),
+                    friend.getUsername(),
+                    friend.getDisplayName(),
+                    friend.getProfilePictureUrl()
+
+            );
+            responses.add(friendResponse);
+
+        }
+        if(responses.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(responses);
     }
 }

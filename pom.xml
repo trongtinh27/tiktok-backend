@@ -93,16 +93,19 @@
 			<version>0.12.6</version>
 		</dependency>
 
-
-
-
 		<!--	MySql	-->
-
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>8.0.30</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
+
 
 	</dependencies>
 
