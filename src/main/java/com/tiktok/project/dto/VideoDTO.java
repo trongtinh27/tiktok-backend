@@ -15,11 +15,14 @@ public class VideoDTO {
     private String userAvatar;
     private String thumbnailUrl;
     private String videoUrl;
-    private String decription;
+    private String description;
     private String shape;
     private int commentCount;
     private int likeCount;
     private int collectCount;
+    private boolean followStatus;
+    private boolean likeStatus;
+    private boolean collectStatus;
 
 
 }

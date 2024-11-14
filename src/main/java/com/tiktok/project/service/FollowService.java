@@ -9,5 +9,7 @@ public interface FollowService {
     boolean checkFollowerWithFollowed(int followerId, int followedId);
     List<User> getMutualFollowings(User user);
 
+    boolean toggleFollow(User follower, User followed );
+
 
 }

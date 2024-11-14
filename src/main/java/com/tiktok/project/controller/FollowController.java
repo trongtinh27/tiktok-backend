@@ -3,6 +3,8 @@ package com.tiktok.project.controller;
 
 import com.tiktok.project.dto.FollowInfoResponseDTO;
 import com.tiktok.project.dto.FollowResponseDTO;
+import com.tiktok.project.dto.request.FollowResponse;
+import com.tiktok.project.dto.response.FollowRequest;
 import com.tiktok.project.entity.Follower;
 import com.tiktok.project.entity.User;
 import com.tiktok.project.repository.FollowRepository;
@@ -105,6 +107,20 @@ public class FollowController {
             return ResponseEntity.ok(listResult);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+
+    @PostMapping("/addFollow")
+    public ResponseEntity<?> toggleFollow(@RequestBody FollowRequest followRequest) {
+        User follower = userService.findUserById(followRequest.getFollowerId());
+        User followed = userService.findUserById(followRequest.getFollowedId());
+
+        if(follower != null && followed != null) {
+            return ResponseEntity.ok(new FollowResponse(
+                    followService.toggleFollow(follower, followed)
+            ));
+        }
+        return ResponseEntity.badRequest().build();
+
     }
 
 }

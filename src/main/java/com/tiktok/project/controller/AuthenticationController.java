@@ -170,7 +170,7 @@ public class AuthenticationController {
                                     "Refresh token successfully",
                                     JwtService.EXPIRATIONTIME_TOKEN
                             ));
-                }).orElseThrow(() -> new RuntimeException("Refresh token is not in database"));
+                }).orElse(ResponseEntity.badRequest().build()); // Refresh token is not in database
     }
 
 
