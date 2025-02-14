@@ -1,6 +1,5 @@
 package com.tiktok.project.service.ImpService;
 
-import com.sun.java.accessibility.util.Translator;
 import com.tiktok.project.dto.request.EditProfileRequestDTO;
 import com.tiktok.project.dto.response.FriendResponse;
 import com.tiktok.project.dto.response.SearchResponse;
@@ -9,7 +8,6 @@ import com.tiktok.project.dto.response.UsernameValidationDTO;
 import com.tiktok.project.entity.Role;
 import com.tiktok.project.entity.User;
 import com.tiktok.project.exception.ResourceNotFoundException;
-import com.tiktok.project.repository.FollowRepository;
 import com.tiktok.project.repository.RoleRepository;
 import com.tiktok.project.repository.UserRepository;
 import com.tiktok.project.service.FollowService;
@@ -18,9 +16,6 @@ import io.jsonwebtoken.security.SignatureException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
