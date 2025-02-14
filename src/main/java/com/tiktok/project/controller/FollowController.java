@@ -1,126 +1,53 @@
 package com.tiktok.project.controller;
 
 
-import com.tiktok.project.dto.FollowInfoResponseDTO;
-import com.tiktok.project.dto.FollowResponseDTO;
-import com.tiktok.project.dto.request.FollowResponse;
-import com.tiktok.project.dto.response.FollowRequest;
-import com.tiktok.project.entity.Follower;
-import com.tiktok.project.entity.User;
-import com.tiktok.project.repository.FollowRepository;
+import com.tiktok.project.dto.response.*;
 import com.tiktok.project.service.FollowService;
-import com.tiktok.project.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/follow")
+@RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class FollowController {
-    @Autowired
-    private FollowService followService;
 
-    @Autowired
-    private UserService userService;
-
+    private final FollowService followService;
     @GetMapping("/checkFollowing")
-    public ResponseEntity<?> checkFollowing(@RequestParam int followingId,
-                                                            @RequestParam int followerId) {
-        // Kiểm tra followerId có follow followingId
-        boolean isFollowing = followService.checkFollowerWithFollowed(followerId, followingId);
-
-        // Kiểm tra ngược lại, followingId có follow followerId
-        boolean isReverseFollowing = followService.checkFollowerWithFollowed(followingId, followerId);
-
-        // Tạo response DTO
-        FollowResponseDTO response = new FollowResponseDTO();
-        response.setFollowing(isFollowing);  // Trạng thái followerId có follow followingId
-        response.setMutualFollowing(isFollowing && isReverseFollowing);  // Cả 2 đều follow nhau
-        response.setFollowingId(followingId);
-        response.setFollowerId(followerId);
-
-        // Trả về kết quả
-        return ResponseEntity.ok(response);
+    public ResponseData<?> checkFollowing(@RequestParam int followingId,
+                                          @RequestParam int followerId) {
+        return new ResponseData<>(HttpStatus.OK, "Check follow successfully", followService.checkFollowing(followingId, followerId));
     }
     @GetMapping("/get-list-following")
-    public ResponseEntity<?> getListFollowing(
+    public ResponseData<?> getListFollowing(
             @RequestParam int id,
             @RequestParam int offset,
             @RequestParam int limit) {
-
-        User user = userService.findUserById(id);
-        if (user != null) {
-            List<Follower> listFollowing = user.getFollowingRelations()
-                    .stream()
-                    .skip(offset)
-                    .limit(limit)
-                    .toList();
-
-            List<FollowInfoResponseDTO> listResult = new ArrayList<>();
-            for (Follower follower : listFollowing) {
-                User userFollowing = follower.getFollowed();
-                listResult.add(new FollowInfoResponseDTO(
-                        userFollowing.getProfilePictureUrl(),
-                        userFollowing.getUsername(),
-                        userFollowing.getDisplayName(),
-                        userFollowing.isVerify()
-                ));
-            }
-            return ResponseEntity.ok(listResult);
+        List<FollowInfoResponseDTO> followInfoResponseDTOList = followService.getListFollowingByUserId(id, offset, limit);
+        if(followInfoResponseDTOList != null) {
+            return new ResponseData<>(HttpStatus.OK, "Get List following by user " + id+ " successfully", followInfoResponseDTOList);
         }
-
-
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        return new ResponseError(HttpStatus.BAD_REQUEST, "Get List following by user " + id+ " failed");
     }
 
     @GetMapping("/get-list-follower")
-    public ResponseEntity<?> getListFollower(
+    public ResponseData<?> getListFollower(
             @RequestParam int id,
             @RequestParam int offset,
             @RequestParam int limit) {
-
-        User user = userService.findUserById(id);
-        if (user != null) {
-            List<Follower> listFollower = user.getFollowerRelations()
-                    .stream()
-                    .skip(offset)
-                    .limit(limit)
-                    .toList();
-
-            List<FollowInfoResponseDTO> listResult = new ArrayList<>();
-            for (Follower follower : listFollower) {
-                User userFollower = follower.getFollowed();
-                listResult.add(new FollowInfoResponseDTO(
-                        userFollower.getProfilePictureUrl(),
-                        userFollower.getUsername(),
-                        userFollower.getDisplayName(),
-                        userFollower.isVerify()
-                ));
-            }
-            return ResponseEntity.ok(listResult);
+        List<FollowInfoResponseDTO> followInfoResponseDTOList = followService.getListFollowerByUserId(id, offset, limit);
+        if(followInfoResponseDTOList != null) {
+            return new ResponseData<>(HttpStatus.OK, "Get List follower by user " + id+ " successfully", followInfoResponseDTOList);
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        return new ResponseError(HttpStatus.BAD_REQUEST, "Get List follower by user " + id+ " failed");
     }
 
-    @PostMapping("/addFollow")
-    public ResponseEntity<?> toggleFollow(@RequestBody FollowRequest followRequest) {
-        User follower = userService.findUserById(followRequest.getFollowerId());
-        User followed = userService.findUserById(followRequest.getFollowedId());
-
-        if(follower != null && followed != null) {
-            return ResponseEntity.ok(new FollowResponse(
-                    followService.toggleFollow(follower, followed)
-            ));
-        }
-        return ResponseEntity.badRequest().build();
-
+    @PostMapping("/toggleFollow")
+    public ResponseSuccess toggleFollow(@RequestBody FollowRequest followRequest) {
+        return new ResponseSuccess(HttpStatus.OK, "Toggle Follow successfully", followService.toggleFollow(followRequest));
     }
 
 }

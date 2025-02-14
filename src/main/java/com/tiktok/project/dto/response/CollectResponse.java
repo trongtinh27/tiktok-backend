@@ -7,6 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class CollectResponse {
     private boolean collectStatus;
     private int countCollect;

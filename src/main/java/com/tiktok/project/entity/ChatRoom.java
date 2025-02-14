@@ -14,10 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @Table(name = "chat_rooms")
-public class ChatRoom {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+public class ChatRoom extends AbstractEntity<Integer>{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_one_id", nullable = false)
@@ -25,12 +22,5 @@ public class ChatRoom {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_two_id", nullable = false)
     private User userTwo;
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Date createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = new Date();
-    }
 }

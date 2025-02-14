@@ -1,4 +1,4 @@
-package com.tiktok.project.dto;
+package com.tiktok.project.dto.response;
 
 import com.tiktok.project.entity.Role;
 import lombok.*;
@@ -10,6 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class UserDTO {
     private int id;
     private String username;

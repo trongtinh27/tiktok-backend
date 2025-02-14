@@ -1,144 +1,92 @@
 package com.tiktok.project.controller;
 
-import com.tiktok.project.dto.EditProfileRequestDTO;
-import com.tiktok.project.dto.UserDTO;
-import com.tiktok.project.dto.UsernameValidationDTO;
-import com.tiktok.project.dto.response.FriendResponse;
-import com.tiktok.project.entity.User;
-import com.tiktok.project.service.FollowService;
+import com.tiktok.project.dto.request.EditProfileRequestDTO;
+import com.tiktok.project.dto.response.*;
+import com.tiktok.project.exception.ResourceNotFoundException;
 import com.tiktok.project.service.UserService;
 import io.jsonwebtoken.security.SignatureException;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
+@Validated
+@Slf4j
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private FollowService followService;
+    private final UserService userService;
 
     @GetMapping("/profile")
-    public ResponseEntity<?> loadUser(Authentication authentication) {
+    public ResponseData<?> loadUser(Authentication authentication) {
+        log.info("Request get user profile");
         try {
-            if(authentication== null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-            }
+            UserDTO userDTO = userService.loadUser(authentication);
+            log.info("Load user profile successfully, username={}", userDTO.getUsername());
 
-            Object principal = authentication.getPrincipal();
-            String username;
-            if (principal instanceof UserDetails) {
-                username = ((UserDetails) principal).getUsername();
-            } else if (principal instanceof String) {
-                username = principal.toString();
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected principal type");
-            }
-
-            return getResponseEntity(username);
+            return new ResponseData<>(HttpStatus.OK, "Get Profile successfully", userDTO);
         } catch (SignatureException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token");
-
+            log.error("JWT signature validation failed: {}", e.getMessage(), e.getCause());
+            return new ResponseError(HttpStatus.UNAUTHORIZED, e.getMessage());
         }
     }
 
     @GetMapping("/get/{username}")
-    public ResponseEntity<?> getProfileByUsername(@PathVariable String username) {
+    public ResponseData<?> getProfileByUsername(@PathVariable
+                                                      @Size(min = 3, max = 30, message = "Username must be from 3 to 30 characters") String username) {
+        log.info("Request get user profile, username={}", username);
         try {
-            if(username == null || username.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found user");
-            }
-
-            return getResponseEntity(username);
-        } catch (SignatureException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token");
-
+            return new ResponseData<>(HttpStatus.OK, "Get Profile successfully", userService.getUserDTO(username));
+        } catch (ResourceNotFoundException e) {
+            log.error("Failed to load user profile: {}", e.getMessage(), e.getCause());
+            return new ResponseError(HttpStatus.BAD_REQUEST, "Get Profile failed");
         }
     }
 
     @GetMapping("/check-username")
-    public ResponseEntity<?> checkUsername(@RequestParam String username) {
-        User user = userService.findUserByUsername(username);
-        if(user == null) {
-            return ResponseEntity.ok(new UsernameValidationDTO(
-                    false,
-                    "Username is available"
-            ));
-        }
-        return ResponseEntity.ok(
-                new UsernameValidationDTO(
-                        true,
-                        "User already exists"
-                )
-        );
+    public ResponseData<?> checkUsername(@RequestParam String username) {
+        log.info("Request to check username: {}", username);
+        var usernameValidationDTO = userService.checkUsername(username);
+        log.info("Username '{}' is {} available", username, usernameValidationDTO.isExists() ? "" : "not ");
+        return new ResponseData<>(HttpStatus.OK, "Check username successfully", usernameValidationDTO);
     }
 
     @PostMapping("/edit-profile")
-    public ResponseEntity<?> editProfile(@RequestBody EditProfileRequestDTO editProfileRequest) {
-        System.out.println(editProfileRequest);
-        User user = userService.findUserById(editProfileRequest.getId());
-        if(user != null) {
-            user.setProfilePictureUrl(editProfileRequest.getAvatarURL());
-            user.setUsername(editProfileRequest.getUsername());
-            user.setDisplayName(editProfileRequest.getFullName());
-            user.setBio(editProfileRequest.getBio());
-            userService.editUser(user);
-
-            return getResponseEntity(user.getUsername());
+    public ResponseData<?> editProfile(@Valid @RequestBody EditProfileRequestDTO editProfileRequest) {
+        log.info("Request update userId={}", editProfileRequest.getId());
+        try {
+            return new ResponseData<>(HttpStatus.OK, "Edit profile successfully", userService.editProfile(editProfileRequest));
+        } catch (ResourceNotFoundException e) {
+            log.error("Failed to edit user profile: {}", e.getMessage(), e.getCause());
+            return new ResponseError(HttpStatus.BAD_REQUEST, e.getMessage());
         }
-        return ResponseEntity.badRequest().body("Edit profile fail");
-    }
-
-    private ResponseEntity<?> getResponseEntity(String username) {
-        User user = userService.findUserByUsername(username);
-        if(user != null) {
-            return ResponseEntity.ok(
-                    new UserDTO(
-                            user.getId(),
-                            user.getUsername(),
-                            user.getDisplayName(),
-                            user.getProfilePictureUrl(),
-                            user.getBio(),
-                            user.getFollowingCount(),
-                            user.getFollowerCount(),
-                            user.isVerify(),
-                            user.getRoleList()
-                    )
-            );
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found User");
     }
 
     @GetMapping("/get-list-friend")
-    public ResponseEntity<?> getListFriend(@RequestParam int id) {
-        User user = userService.findUserById(id);
-
-        List<User> listUser = followService.getMutualFollowings(user);
-        List<FriendResponse> responses = new ArrayList<>();
-
-        for (User friend : listUser) {
-            FriendResponse friendResponse = new FriendResponse(
-                    friend.getId(),
-                    friend.getUsername(),
-                    friend.getDisplayName(),
-                    friend.getProfilePictureUrl()
-
-            );
-            responses.add(friendResponse);
-
+    public ResponseData<?> getListFriend(@RequestParam @Min(value = 1, message = "Id have must be greater than 0") int id) {
+        log.info("Request to get list of friends for userId={}", id);
+        try {
+            var friends = userService.getListFriend(id);
+            log.info("Successfully retrieved {} friends for userId={}", friends.size(), id);
+            return new ResponseData<>(HttpStatus.OK, "Get List Friend successfully", friends);
+        } catch (ResourceNotFoundException e) {
+            log.error("Failed to get list of friends for userId={}, reason: {}", id, e.getMessage(), e.getCause());
+            return new ResponseError(HttpStatus.BAD_REQUEST, e.getMessage());
         }
-        if(responses.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/search")
+    public ResponseData<?> searchUser(@RequestParam @NotBlank String q) {
+        log.info("Request to search users with keyword='{}'", q);
+        var result = userService.search(q);
+        log.info("Search completed for keyword='{}', found {} users", q, result.size());
+        return new ResponseData<>(HttpStatus.OK, "Search user successfully", result);
     }
 }

@@ -12,15 +12,24 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:3000").withSockJS();
+        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
+        // Tiền tố cho các request từ client gửi lên server
         registry.setApplicationDestinationPrefixes("/app");
-        registry.enableSimpleBroker("/topic", "/queue");
+
+        // Các topic dùng cho chat và bình luận realtime
+        registry.enableSimpleBroker(
+                "/topic/chat",      // Dùng cho chat nhóm
+                "/queue/messages",
+                "/chat.sendMessage",
+                "/queue/chat",      // Dùng cho tin nhắn riêng tư
+                "/topic/comments"   // Dùng cho bình luận realtime
+        );
+
+        // Dùng cho tin nhắn riêng tư
         registry.setUserDestinationPrefix("/user");
     }
-
-
 }

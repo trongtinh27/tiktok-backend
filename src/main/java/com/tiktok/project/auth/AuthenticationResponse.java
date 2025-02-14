@@ -11,8 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthenticationResponse {
+    private int userId;
     private String token;
-    private String message;
+    private String refreshToken;
     private int tokenExpiration;
+    private int refreshTokenExpiration;
 
 }

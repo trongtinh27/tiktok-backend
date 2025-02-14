@@ -5,8 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.sql.Date;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -14,10 +15,7 @@ import java.sql.Date;
 @NoArgsConstructor
 @Entity
 @Table(name = "views")
-public class View {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+public class View extends AbstractEntity<Integer>{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -27,6 +25,4 @@ public class View {
     @JoinColumn(name = "video_id", nullable = false)
     private Video video;
 
-    @Column(name = "created_at", nullable = false)
-    private Date createdAt;
 }

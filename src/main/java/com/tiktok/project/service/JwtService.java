@@ -7,6 +7,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.User;
@@ -22,11 +23,13 @@ import java.util.function.Function;
 
 @Component
 public class JwtService {
+    @Autowired
+    private UserService userService;
     public static final String SECRETKEY = "pB5fH2rY7k89V6Y4q3Mdp9IwLsN9Qm8S3lB2dF3Jc2g=";
-    public static final int EXPIRATIONTIME_TOKEN = 1000  * 30; // 30 minutes
+    public static final int EXPIRATIONTIME_TOKEN = 1000 * 60 * 30; // 30 minutes
     public static final int EXPIRATIONTIME_REFRESHTOKEN = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-    @Value("${tiktok-backend.app.jwtRefreshCookieName}")
+    @Value("token")
     private String jwtRefreshCookie;
     public ResponseCookie generateRefreshJwtCookie(String refreshToken) {
         return generateCookie(jwtRefreshCookie, refreshToken, "/auth/refreshToken");
@@ -54,8 +57,7 @@ public class JwtService {
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
-                .compact()
-                ;
+                .compact();
     }
 
     private Key getSignKey() {
@@ -66,6 +68,10 @@ public class JwtService {
     // Extract the username from the token
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public int extractUserId(String token) {
+        return userService.findUserByUsername(extractUsername(token)).getId();
     }
 
     // Extract the expiration date from the token
@@ -87,6 +93,8 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
+
 
     // Check if the token is expired
     private Boolean isTokenExpired(String token) {

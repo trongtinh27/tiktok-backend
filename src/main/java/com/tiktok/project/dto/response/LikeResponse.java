@@ -7,6 +7,7 @@ import lombok.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class LikeResponse {
     private boolean likeStatus;
     private int countLike;

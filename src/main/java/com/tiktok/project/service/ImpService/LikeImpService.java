@@ -20,10 +20,8 @@ import java.util.Optional;
 @Transactional
 @Slf4j
 public class LikeImpService implements LikeService {
-    @Autowired
-    LikeRepository likeRepository;
-    @Autowired
-    VideoRepository videoRepository;
+    private final LikeRepository likeRepository;
+    private final VideoRepository videoRepository;
 
     @Override
     public boolean likeVideo(User user, int videoId) {
@@ -32,7 +30,6 @@ public class LikeImpService implements LikeService {
 
         if(video != null) {
             if(existingLike.isPresent()) {
-                video.setLikesCount(video.getLikesCount()-1);
                 videoRepository.save(video);
                 likeRepository.delete(existingLike.get());
                 return false;
@@ -41,7 +38,6 @@ public class LikeImpService implements LikeService {
             like.setUser(user);
             like.setVideo(video);
             like.setCreatedAt(new Date());
-            video.setLikesCount(video.getLikesCount()+1);
             videoRepository.save(video);
             likeRepository.save(like);
             return true;

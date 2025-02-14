@@ -9,6 +9,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ChatBoxResponse {
     private int chatRoom;
     private UserChatBox receiver;

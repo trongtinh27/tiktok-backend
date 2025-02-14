@@ -1,9 +1,12 @@
 package com.tiktok.project.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import net.minidev.json.annotate.JsonIgnore;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -15,12 +18,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-//@ToString
 @Table(name = "users")
-public class User implements UserDetails {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+public class User extends AbstractEntity<Integer> implements UserDetails  {
 
     @Column(unique = true, nullable = false)
     private String username;
@@ -36,6 +35,7 @@ public class User implements UserDetails {
 
 
     @Column(name = "password_hash", nullable = false)
+    @JsonIgnore // 🔥 Không trả password ra JSON
     private String password;
 
     @Column(name = "profile_picture_url")
@@ -48,15 +48,13 @@ public class User implements UserDetails {
     @Temporal(TemporalType.TIMESTAMP)
     private Date birthDay;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
 
     @Column(name = "updated_at")
+    @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)  // 🔥 Đổi EAGER → LAZY
     @JsonIgnore
     @JoinTable(
             name = "user_roles",
@@ -65,13 +63,14 @@ public class User implements UserDetails {
     )
     private List<Role> roleList;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // 🔥 Tránh vòng lặp JSON
     private List<Video> videos;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-comments")
     private List<Comment> comments;
+
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -142,15 +141,5 @@ public class User implements UserDetails {
         this.email = email;
         this.username = email;
         this.password = password;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = new Date();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = new Date();
     }
 }

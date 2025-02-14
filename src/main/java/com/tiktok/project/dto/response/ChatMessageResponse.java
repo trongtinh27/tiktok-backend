@@ -9,6 +9,7 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ChatMessageResponse {
     private int id;
     private UserMessage sender;

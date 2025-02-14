@@ -1,4 +1,4 @@
-package com.tiktok.project.dto.request;
+package com.tiktok.project.dto.response;
 
 import lombok.*;
 
@@ -7,6 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class FollowResponse {
     private boolean followStatus;
 }

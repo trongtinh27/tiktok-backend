@@ -8,7 +8,9 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
+@Builder
 public class FollowRequest {
     private int followerId;
     private int followedId;
+    private String usernameFollowed;
 }

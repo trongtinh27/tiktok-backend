@@ -1,6 +1,7 @@
 package com.tiktok.project.config;
 
 import com.tiktok.project.service.ImpService.UserImpService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,12 +13,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class CustomAuthenticationProvider implements AuthenticationProvider {
-    @Autowired
-    private UserImpService userImpService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UserImpService userImpService;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override

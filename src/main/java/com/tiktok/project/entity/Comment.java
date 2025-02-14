@@ -1,12 +1,15 @@
 package com.tiktok.project.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.minidev.json.annotate.JsonIgnore;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -15,24 +18,20 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "comments")
-public class Comment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+public class Comment extends AbstractEntity<Integer>{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "video_id", nullable = false)
+    @JsonBackReference("video-comments") // Chỉ định reference với Video
     private Video video;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference("user-comments") // Chỉ định reference với User
     private User user;
 
     @Column(length = 1000, nullable = false)
     private String content;
-
-    @Column(name = "created_at", nullable = false)
-    private Date createdAt;
 
     @Column(name = "likes_count")
     private int likesCount;

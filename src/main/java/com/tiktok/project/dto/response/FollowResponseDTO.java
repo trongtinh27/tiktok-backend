@@ -1,4 +1,4 @@
-package com.tiktok.project.dto;
+package com.tiktok.project.dto.response;
 
 import lombok.*;
 
@@ -7,6 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class FollowResponseDTO {
     private boolean isFollowing;  // Trạng thái follow
     private boolean isMutualFollowing; // Trạng thái follow lẫn nhau

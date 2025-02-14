@@ -1,7 +1,9 @@
 package com.tiktok.project.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+import net.minidev.json.annotate.JsonIgnore;
 
 import java.util.Date;
 import java.util.List;
@@ -13,13 +15,11 @@ import java.util.List;
 @ToString
 @Entity
 @Table(name = "videos")
-public class Video {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+public class Video extends AbstractEntity<Integer>{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore  // 🔥 Tránh vòng lặp với User
     private User user;
 
     @Column(name = "video_url", nullable = false)
@@ -34,23 +34,8 @@ public class Video {
     @Column(nullable = false)
     private String shape;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
-
-    @Column(name = "likes_count")
-    private int likesCount;
-
-    @Column(name = "comments_count")
-    private int commentsCount;
-
-    @Column(name = "views_count")
-    private int viewsCount;
-
-    @Column(name = "collects_count")
-    private int collectCount;
-
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("video-comments")
     private List<Comment> comments;
 
 
@@ -58,9 +43,25 @@ public class Video {
     private List<Like> likes;
 
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("video-views")
     private List<View> views;
 
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Collect> collects;
+
+    public int getViewsCount() {
+        return views.size();
+    }
+
+    public int getLikeCount() {
+        return likes.size();
+    }
+    public int getCollectCount() {
+        return collects.size();
+    }
+    public int getCommentCount() {
+        return comments.size();
+    }
+
 }
 

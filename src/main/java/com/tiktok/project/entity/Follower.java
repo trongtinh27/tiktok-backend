@@ -13,10 +13,7 @@ import java.util.Date;
 @ToString
 @Entity
 @Table(name = "followers")
-public class Follower {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+public class Follower extends AbstractEntity<Integer> {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follower_id", nullable = false)
@@ -26,7 +23,4 @@ public class Follower {
     @JoinColumn(name = "followed_id", nullable = false)
     private User followed;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
 }

@@ -14,10 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @Table(name = "collect")
-public class Collect {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+public class Collect extends AbstractEntity<Integer>{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -26,8 +23,4 @@ public class Collect {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "video_id", nullable = false)
     private Video video;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
 }

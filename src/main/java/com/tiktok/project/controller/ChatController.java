@@ -1,14 +1,18 @@
 package com.tiktok.project.controller;
 
-import com.tiktok.project.dto.ChatMessage;
+import com.tiktok.project.dto.request.ChatMessage;
+import com.tiktok.project.dto.request.ChatRoomRequest;
 import com.tiktok.project.dto.response.ChatBoxResponse;
 import com.tiktok.project.dto.response.ChatMessageResponse;
+import com.tiktok.project.dto.response.ResponseData;
 import com.tiktok.project.entity.ChatRoom;
 import com.tiktok.project.entity.Message;
 import com.tiktok.project.entity.User;
 import com.tiktok.project.service.ChatRoomService;
 import com.tiktok.project.service.MessageService;
 import com.tiktok.project.service.UserService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +20,10 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -37,13 +39,13 @@ public class ChatController {
     private ChatRoomService chatRoomService;
 
     @PostMapping("/create-chat-room")
-    public ResponseEntity<?> createChatRoom(@RequestParam int userOneId, @RequestParam int userTwoId) {
-        return ResponseEntity.ok(chatRoomService.findOrCreateChatRoom(userOneId, userTwoId).getId());
+    public ResponseData<?> createChatRoom(@Valid @RequestBody ChatRoomRequest request) {
+        return new ResponseData<>(HttpStatus.OK, "Create Chatroom successfully", chatRoomService.findOrCreateChatRoom(request.getUserOneId(), request.getUserTwoId()).getId());
     }
 
     @MessageMapping("/chat.sendMessage/{roomId}")
     @SendTo("/queue/messages/{roomId}") // Sử dụng roomId trong đích gửi tin nhắn
-    public ChatMessageResponse sendMessage(@DestinationVariable String roomId, ChatMessage chatMessage) {
+    public ChatMessageResponse sendMessage(@DestinationVariable @PathVariable String roomId, ChatMessage chatMessage) {
         User sender = userService.findUserById(chatMessage.getSenderId());
         User receiver = userService.findUserById(chatMessage.getReceiverId());
 

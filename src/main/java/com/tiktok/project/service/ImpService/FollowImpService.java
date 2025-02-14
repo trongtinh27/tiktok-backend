@@ -1,14 +1,24 @@
 package com.tiktok.project.service.ImpService;
 
+import com.tiktok.project.dto.response.FollowInfoResponseDTO;
+import com.tiktok.project.dto.response.FollowRequest;
+import com.tiktok.project.dto.response.FollowResponseDTO;
+import com.tiktok.project.dto.response.ToggleFollowResponse;
 import com.tiktok.project.entity.Follower;
 import com.tiktok.project.entity.User;
+import com.tiktok.project.exception.ResourceNotFoundException;
 import com.tiktok.project.repository.FollowRepository;
 import com.tiktok.project.repository.UserRepository;
 import com.tiktok.project.service.FollowService;
+import com.tiktok.project.service.UserService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -23,6 +33,25 @@ public class FollowImpService implements FollowService {
     private FollowRepository followRepository;
     @Autowired
     private UserRepository userRepository;
+
+    @Override
+    public FollowResponseDTO checkFollowing(int followingId, int followerId) {
+        log.info("---------- CheckFollowing ----------");
+        // Kiểm tra followerId có follow followingId
+        boolean isFollowing = followRepository.existsByFollowerIdAndFollowedId(followerId, followingId);
+        log.info("Checking if user {} follows user {}", followerId, followingId);
+
+        // Kiểm tra ngược lại, followingId có follow followerId
+        boolean isReverseFollowing = followRepository.existsByFollowerIdAndFollowedId(followingId, followerId);
+        log.info("Checking reverse: user {} follows user {}", followingId, followerId);
+
+        return FollowResponseDTO.builder()
+                .isFollowing(isFollowing)
+                .isMutualFollowing(isFollowing && isReverseFollowing)
+                .followingId(followingId)
+                .followerId(followerId)
+                .build();
+    }
 
     @Override
     public boolean checkFollowerWithFollowed(int followerId, int followedId) {
@@ -46,55 +75,123 @@ public class FollowImpService implements FollowService {
 
         return new ArrayList<>(followingUsers);
     }
-//
-//    @Override
-//    public boolean followUser(User user, User follower) {
-//        List<Follower> listFollowing = follower.getFollowingRelations();
-//        Optional<Follower> existingFollowing = followRepository.findByFollowedAndFollower(user,follower);
-//        if(existingFollowing.isPresent()){
-//            if(listFollowing.contains(existingFollowing.get())){
-//                follower.getFollowingRelations().remove(existingFollowing.get());
-//
-//                userRepository.save(follower);
-//                followRepository.delete(existingFollowing.get());
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
 
     @Override
-    public boolean toggleFollow(User followedUser, User followingUser) {
-        // Danh sách những người mà `followingUser` đang theo dõi
-        List<Follower> followingRelations = followingUser.getFollowingRelations();
+    public List<FollowInfoResponseDTO> getListFollowingByUserId(int id, int offset, int limit) {
+        User user = userRepository.findUserById(id).orElse(null);
+        if (user != null) {
+            log.info("Get List following by user {}", id);
 
-        // Kiểm tra xem `followingUser` đã theo dõi `followedUser` hay chưa
+            List<Follower> listFollowing = user.getFollowingRelations()
+                    .stream()
+                    .skip(offset)
+                    .limit(limit)
+                    .toList();
+
+            List<FollowInfoResponseDTO> listResult = new ArrayList<>();
+
+            for (Follower follower : listFollowing) {
+                User userFollowing = follower.getFollowed();
+                listResult.add(new FollowInfoResponseDTO(
+                        userFollowing.getProfilePictureUrl(),
+                        userFollowing.getUsername(),
+                        userFollowing.getDisplayName(),
+                        userFollowing.isVerify()
+                ));
+            }
+            return listResult;
+        }
+        log.info("Get List following error not found User {}", id);
+        return null;
+    }
+
+    @Override
+    public List<FollowInfoResponseDTO> getListFollowerByUserId(int id, int offset, int limit) {
+        User user = userRepository.findUserById(id).orElse(null);
+        if (user != null) {
+            log.info("Get List follower by user {}", id);
+
+            List<Follower> listFollower = user.getFollowerRelations()
+                    .stream()
+                    .skip(offset)
+                    .limit(limit)
+                    .toList();
+
+            List<FollowInfoResponseDTO> listResult = new ArrayList<>();
+            for (Follower follower : listFollower) {
+                User userFollower = follower.getFollower();
+                listResult.add(new FollowInfoResponseDTO(
+                        userFollower.getProfilePictureUrl(),
+                        userFollower.getUsername(),
+                        userFollower.getDisplayName(),
+                        userFollower.isVerify()
+                ));
+            }
+            return listResult;
+        }
+        log.info("Get List follower error not found User {}", id);
+        return null;
+    }
+    @Override
+    public ToggleFollowResponse toggleFollow(FollowRequest followRequest) {
+        log.info("---------- Toggle Following ----------");
+        User followedUser = userRepository.findUserById(followRequest.getFollowerId()).orElse(null);
+        User followingUser;
+        if(followRequest.getUsernameFollowed() == null || followRequest.getUsernameFollowed().isEmpty()) {
+            followingUser = userRepository.findUserById(followRequest.getFollowedId()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        } else {
+            followingUser = userRepository.findUserById(followRequest.getFollowerId()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        }
+
+        if (followedUser == null || followingUser == null) {
+            log.warn("Not found user {} and user {}", followRequest.getFollowerId(), followRequest.getFollowedId());
+            return ToggleFollowResponse.builder()
+                    .followerId(0)
+                    .followedId(0)
+                    .isFollowing(false)
+                    .totalFollowers(0)
+                    .message("User not found")
+                    .build();
+        }
+
         Optional<Follower> existingFollowRelation = followRepository.findByFollowedAndFollower(followedUser, followingUser);
 
-        // Nếu quan hệ follow đã tồn tại
         if (existingFollowRelation.isPresent()) {
             Follower followRelation = existingFollowRelation.get();
 
-            // Kiểm tra xem quan hệ này có nằm trong danh sách `followingRelations` của `followingUser` không
-            if (followingRelations.contains(followRelation)) {
-                followingUser.getFollowingRelations().remove(existingFollowRelation.get());
+            // Xóa khỏi danh sách quan hệ trước khi xóa khỏi database
+            followingUser.getFollowingRelations().remove(followRelation);
+            followedUser.getFollowerRelations().remove(followRelation);
+//            userRepository.save(f)
+            followRepository.delete(followRelation);
+            int totalFollowers = followRepository.countByFollowed(followedUser);
+            log.info("User {} unfollowed User {}", followedUser.getId(), followingUser.getId());
 
-                userRepository.save(followingUser);
-                followRepository.delete(followRelation);
-                return false;  // Đã xóa follow thành công
-            }
-        } else {
-            // Nếu quan hệ chưa tồn tại, tạo quan hệ follow mới
+            return ToggleFollowResponse.builder()
+                    .followerId(followingUser.getId())
+                    .followedId(followedUser.getId())
+                    .isFollowing(false)
+                    .totalFollowers(totalFollowers)
+                    .message("Unfollowed")
+                    .build();
+        }
+        else {
             Follower newFollowRelation = new Follower();
             newFollowRelation.setFollower(followingUser);
             newFollowRelation.setFollowed(followedUser);
             newFollowRelation.setCreatedAt(new Date());
 
-            followRepository.save(newFollowRelation);
-            return true;  // Đã thêm follow thành công
-        }
+            followRepository.saveAndFlush(newFollowRelation);
 
-        return false;  // Không có thay đổi
+            int totalFollowers = followRepository.countByFollowed(followedUser);
+            log.info("User {} followed User {}", followedUser.getId(), followingUser.getId());
+            return ToggleFollowResponse.builder()
+                    .followerId(followingUser.getId())
+                    .followedId(followedUser.getId())
+                    .isFollowing(true)
+                    .totalFollowers(totalFollowers)
+                    .message("Followed")
+                    .build();
+        }
     }
 }

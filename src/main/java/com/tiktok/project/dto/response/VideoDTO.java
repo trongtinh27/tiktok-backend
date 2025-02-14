@@ -1,4 +1,4 @@
-package com.tiktok.project.dto;
+package com.tiktok.project.dto.response;
 
 
 import lombok.*;
@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class VideoDTO {
     private int id;
     private int userId;
@@ -17,6 +18,7 @@ public class VideoDTO {
     private String videoUrl;
     private String description;
     private String shape;
+    private int viewCount;
     private int commentCount;
     private int likeCount;
     private int collectCount;

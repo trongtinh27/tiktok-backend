@@ -1,4 +1,4 @@
-package com.tiktok.project.dto;
+package com.tiktok.project.dto.response;
 
 import lombok.*;
 
@@ -7,6 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @Setter
 @Getter
+@Builder
 public class UsernameValidationDTO {
     private boolean exists;
     private String message;

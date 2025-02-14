@@ -1,8 +1,10 @@
 package com.tiktok.project.service.ImpService;
 
+import com.tiktok.project.entity.RedisToken;
 import com.tiktok.project.entity.RefreshToken;
 import com.tiktok.project.repository.RefreshTokenRepository;
 import com.tiktok.project.service.JwtService;
+import com.tiktok.project.service.RedisTokenService;
 import com.tiktok.project.service.RefreshTokenService;
 import com.tiktok.project.service.UserService;
 import jakarta.transaction.Transactional;
@@ -19,12 +21,9 @@ import java.util.Optional;
 @Transactional
 @Slf4j
 public class RefreshTokenImpService implements RefreshTokenService {
-    @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private JwtService jwtService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserService userService;
+    private final JwtService jwtService;
 
     @Override
     public RefreshToken createRefreshToken(String username) {

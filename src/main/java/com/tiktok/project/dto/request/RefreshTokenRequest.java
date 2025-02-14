@@ -1,12 +1,10 @@
 package com.tiktok.project.dto.request;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
-@Setter
 public class RefreshTokenRequest {
     private String token;
 }

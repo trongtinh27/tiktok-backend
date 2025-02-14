@@ -34,6 +34,31 @@ public class SecurityConfig {
     @Lazy
     private CustomAuthenticationProvider customAuthenticationProvider;
 
+    private final String[] WHITE_LIST = {"/auth/**",
+                                    "/comments/get/**",
+                                    "/follow/checkFollowing",
+                                    "/follow/get-list-following",
+                                    "/follow/get-list-follower",
+                                    "/users/get/**",
+                                    "/users/search",
+                                    "/video/feed",
+                                    "/video/all/**",
+                                    "/video/getByUser",
+                                    "/video/getByUsername&VideoId/**",
+                                    "/views/**"
+                                    };
+    private final String[] BLACK_LIST = {"/messages/**",
+                                    "/comments/post",
+                                    "/follow/toggleFollow",
+                                    "/users/profile",
+                                    "/users/check-username",
+                                    "/users/edit-profile",
+                                    "/users/get-list-friend",
+                                    "/video/upload",
+                                    "/video/like",
+                                    "/video/collect"
+                                    };
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -50,8 +75,13 @@ public class SecurityConfig {
 
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeRequests(request -> request.anyRequest().permitAll())
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/ws/**").permitAll() // 🔥 Mở WebSocket
+                        .requestMatchers(BLACK_LIST).authenticated()
+                        .requestMatchers(WHITE_LIST).permitAll()
+                        .anyRequest().denyAll()
+                )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(customAuthenticationProvider)

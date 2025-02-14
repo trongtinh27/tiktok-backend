@@ -20,10 +20,9 @@ import java.util.Optional;
 @Transactional
 @Slf4j
 public class CollectImpService implements CollectService {
-    @Autowired
-    CollectRepository collectRepository;
-    @Autowired
-    VideoRepository videoRepository;
+
+    private final CollectRepository collectRepository;
+    private final VideoRepository videoRepository;
 
     @Override
     public boolean collectVideo(User user, int videoId) {
@@ -32,7 +31,6 @@ public class CollectImpService implements CollectService {
 
         if(video != null) {
             if(existingCollect.isPresent()) {
-                video.setCollectCount(video.getCollectCount()-1);
                 videoRepository.save(video);
                 collectRepository.delete(existingCollect.get());
                 return false;
@@ -41,7 +39,6 @@ public class CollectImpService implements CollectService {
             collect.setVideo(video);
             collect.setUser(user);
             collect.setCreatedAt(new Date());
-            video.setCollectCount(video.getCollectCount()+1);
             videoRepository.save(video);
             collectRepository.save(collect);
             return true;
