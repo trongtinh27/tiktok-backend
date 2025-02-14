@@ -157,11 +157,6 @@ public class UserImpService implements UserService, UserDetailsService {
     }
 
     @Override
-    public Role saveRole(Role role) {
-        return roleRepository.save(role);
-    }
-
-    @Override
     public void addToUser(User user, String roleName) {
         Role role = roleRepository.findRoleByName(roleName);
         user.getRoleList().add(role);
