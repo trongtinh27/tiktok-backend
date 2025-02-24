@@ -1,12 +1,11 @@
 package com.tiktok.project.service;
 
 import com.tiktok.project.dto.response.FollowInfoResponseDTO;
-import com.tiktok.project.dto.response.FollowRequest;
+import com.tiktok.project.dto.request.FollowRequest;
 import com.tiktok.project.dto.response.FollowResponseDTO;
 import com.tiktok.project.dto.response.ToggleFollowResponse;
 import com.tiktok.project.entity.User;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 @Repository

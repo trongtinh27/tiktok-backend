@@ -1,6 +1,7 @@
 package com.tiktok.project.controller;
 
 
+import com.tiktok.project.dto.request.FollowRequest;
 import com.tiktok.project.dto.response.*;
 import com.tiktok.project.service.FollowService;
 import lombok.RequiredArgsConstructor;

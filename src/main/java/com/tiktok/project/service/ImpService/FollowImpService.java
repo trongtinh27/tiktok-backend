@@ -1,7 +1,7 @@
 package com.tiktok.project.service.ImpService;
 
 import com.tiktok.project.dto.response.FollowInfoResponseDTO;
-import com.tiktok.project.dto.response.FollowRequest;
+import com.tiktok.project.dto.request.FollowRequest;
 import com.tiktok.project.dto.response.FollowResponseDTO;
 import com.tiktok.project.dto.response.ToggleFollowResponse;
 import com.tiktok.project.entity.Follower;
@@ -10,15 +10,10 @@ import com.tiktok.project.exception.ResourceNotFoundException;
 import com.tiktok.project.repository.FollowRepository;
 import com.tiktok.project.repository.UserRepository;
 import com.tiktok.project.service.FollowService;
-import com.tiktok.project.service.UserService;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

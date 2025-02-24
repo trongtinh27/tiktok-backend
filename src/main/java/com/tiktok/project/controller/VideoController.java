@@ -29,59 +29,6 @@ public class VideoController {
 
     @Autowired
     private VideoService videoService;
-    @Autowired
-    private CommentService commentService;
-    @Autowired
-    private FollowService followService;
-    @Autowired
-    private LikeService likeService;
-    @Autowired
-    private CollectService collectService;
-    @Autowired
-    private UserService userService;
-
-//    @GetMapping("/all/{userId}")
-//    public ResponseSuccess getAllVideo(@PathVariable int userId ) {
-//        List<Video> videoList = videoService.getAllVideo();
-//
-//        boolean followStatus;
-//        boolean likeStatus;
-//        boolean collectStatus;
-//
-//
-//        List<VideoDTO> videoDTOS = new ArrayList<>();
-//        for (Video video: videoList) {
-//
-//            if(userId == 0) {
-//                followStatus = false;
-//                likeStatus = false;
-//                collectStatus = false;
-//            } else {
-//                followStatus = followService.checkFollowerWithFollowed(userId,video.getUser().getId());
-//                likeStatus = likeService.isVideoLiked(userService.findUserById(userId), video.getId());
-//                collectStatus = collectService.isVideoCollected(userService.findUserById(userId), video.getId());
-//            }
-//
-//            videoDTOS.add(new VideoDTO(video.getId(),
-//                    video.getUser().getId(),
-//                    video.getUser().getUsername(),
-//                    video.getUser().getProfilePictureUrl(),
-//                    video.getThumbnailUrl(),
-//                    video.getVideoUrl(),
-//                    video.getDescription(),
-//                    video.getShape(),
-//                    video.getComments().size(),
-//                    video.getLikesCount(),
-//                    video.getCollectCount(),
-//                    followStatus,
-//                    likeStatus,
-//                    collectStatus
-//                    ));
-//        }
-//
-//        return new ResponseSuccess(HttpStatus.OK, "Get all video", videoDTOS);
-//    }
-
     @GetMapping("/getByUser")
     public ResponseData<?> getVideoByUser(@RequestParam String username) {
         log.info("Require get list video of user: {}", username);
@@ -91,7 +38,7 @@ public class VideoController {
     }
 
     @GetMapping("/getByUsername&VideoId/{userId}")
-    public ResponseData<?> getByUsernameAndVideoID(@PathVariable int userId,
+    public ResponseData<?> getByUsernameAndVideoId(@PathVariable int userId,
                                                      @RequestParam @NotBlank String username,
                                                      @RequestParam @Min(value = 1, message = "VideoId have must be greater 0")  int videoId) {
         log.info("Require get video by Username&VideoID of user: {}", username);

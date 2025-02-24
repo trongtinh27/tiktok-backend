@@ -1,4 +1,4 @@
-package com.tiktok.project.dto.response;
+package com.tiktok.project.dto.request;
 
 import lombok.*;
 
