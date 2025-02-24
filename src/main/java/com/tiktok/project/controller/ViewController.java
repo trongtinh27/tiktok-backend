@@ -26,3 +26,4 @@ public class ViewController {
         return new ResponseData<>(HttpStatus.OK, "Add view for video: " + videoId + " successfully");
     }
 }
+
